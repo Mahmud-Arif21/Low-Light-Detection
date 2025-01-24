@@ -113,62 +113,19 @@ This function calculates FPS by measuring the time taken to process each frame.
 
 ## Main Loop
 
-```python
-try:
-    while cap.isOpened():
-        ret, image = cap.read()
-        if not ret:
-            print('No camera detected, aborting')
-            break
-```
+### The main loop works step by step to open camera/video, run segmentation and saving the segmented video. The steps are briefely described below. For line by line explanation, see the notebook "**`YOLO_v11_segmentation.ipynb`**"
 
-- `cap.isOpened()` checks whether the camera is opened.
-- `cap.read()` reads the camera input by frames. If no camera is opened or no frames are read (ret is false), the loop ends.
+- First the program checks whether the camera is opened.
+- Reads the camera input by frames. If no camera is opened or no frames are read (ret is false), the loop ends.
+- Applies the YOLO segmentation model to the image or the frames
+- Measures the time spent doing the segmentation
+- Generates the segmentation mask
+- Puts the FPS as text on the output
+- Saves the output (as mp4 in our case)
+- Displays the frame with segmenttions in a window
+- Then the program exits the loop and stops the program when `q` key is pressed (`cv.waitKey(1)` => for 1ms)
+- Finally, video capture stops, finalized and output is saved as mp4 file and all OpenCV windows close.
 
-```python
-        start = time.perf_counter()
-        results = model(image)
-        end = time.perf_counter()
-```
-
-- `model(image)` applies the YOLO segmentation model to the image or the frames
-- `start` and `end` measures the time spent doing the segmentation
-
-```python
-        segments = results[0].plot()
-        cv.putText(segments, f'FPS: {fps(start, end)}', (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-```
-
-- `results[0].plot()` generates the segmentation mask
-- `cv.putText()` put the FPS as text on the output
-
-```python
-        out.write(segments)
-        cv.imshow('Image Segmentation', segments)
-```
-
-- `out.write()` saves the output (as mp4 in our case)
-- `cv.imshow()` displays the frame with segmenttions in a window
-
-```python
-        key = cv.waitKey(1)
-        if key & 0xFF == ord('q'):
-            print('Exit sequence initiated')
-            break
-```
-
-- Exits the loop and stops the program when `q` key is pressed (`cv.waitKey(1)` => for 1ms)
-
-## Cleanup
-
-### Stops video capture, finalizes and saves the output video file and closes all OpenCV windows.
-
-```python
-finally:
-    cap.release()
-    out.release()
-    cv.destroyAllWindows()
-```
 
 ## Running The Code
 
