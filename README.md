@@ -1,50 +1,52 @@
-# Realtime Object Segmentation with YOLO and OpenCV in Low Light Condition
+# Realtime Object Segmentation with YOLO and OpenCV in Low Light Conditions
 
-![](YOLO_v11_Night_Vision_Segmentation.gif)
+![YOLO Segmentation Demo](YOLO_v11_Night_Vision_Segmentation.gif)
+
+---
+
+## Overview
+
+This project demonstrates real-time object segmentation using the YOLO model and OpenCV. YOLO (You Only Look Once) is a deep-learning-based model designed for fast and efficient object detection, classification, and segmentation. In this implementation, segmentation masks are generated in real-time to identify and isolate objects, even in low-light conditions.
+
+---
 
 ## Key Concepts
 
 ### 1. YOLO (You Only Look Once)
 
-YOLO is a deep-learning based model used for object **detection**, **tracking**, **classification** and other similar tasks on images or videos. As the name suggests YOLO looks at the image (or video frame) only once performs detection making it fast and efficient. This is possible by dividing the image into smaller grids and then predicting the presence of objects and their bounding boxes within each grid cell. It can also predict the segments that belongs to the objects thus separating the sementation mask of one object from another object or the background.
+YOLO is a deep-learning model used for tasks such as object detection, tracking, and segmentation. It divides an image into smaller grids and predicts the presence of objects, their bounding boxes, and segmentation masks for isolating objects from the background. Its speed and efficiency make it suitable for real-time applications.
 
 ### 2. Segmentation
 
-Segmentation is dividing an image into multiple parts or segments often to isolate the areas of interest. YOLO with segmentation produces segmentation masks on the detected objects that highlight the regions covered by the objects.
+Segmentation involves dividing an image into multiple parts or segments to isolate areas of interest. YOLO with segmentation generates masks that highlight the regions occupied by detected objects.
+
+---
 
 ## Requirements
 
-It is important to have your system set up with the following requirements to execute this project.
+### Prerequisites
 
-### Prerequisites:
-
-1. **Visual Studio** or any code editor that suits you
-2. **Python** installed on your system
+1. **Code Editor:** Visual Studio, VS Code, or any preferred editor.
+2. **Python:** Ensure Python is installed on your system.
 3. **Libraries:**
-    * `opencv-python`
-    * `ultralytics`
-4. YOLO segmentation model file: `yolov11-seg.pt`
+   - `opencv-python`
+   - `ultralytics`
+4. **YOLO Model File:** Pretrained segmentation model file, e.g., `yolov11-seg.pt`.
 
-### Installation:
+### Installation
 
-Run the following commands on your terminal to install the required libraries.
+Run the following commands to install the required libraries:
 
 ```bash
 pip install opencv-python
 pip install ultralytics
 ```
 
-### OpenCV:
+---
 
-**OpenCV** (Open Source Computer Vision) is a tool for working with images and videos. `opencv-python` is the python library for this tool.
+## Step-by-Step Implementation
 
-### Ultralytics:
-
-**Ultralytics** is the company that created '**YOLO**' that we are using for this project. By installing the python library `ultralytics` we can use any YOLO model that fits our requirements.
-
-## Import Libraries
-
-We need to import the installed `OpenCV` and `Ultralytics` libraries first, along with another built-in library `time` for measuring the FPS.
+### 1. Import Libraries
 
 ```python
 import time
@@ -52,35 +54,35 @@ import cv2 as cv
 from ultralytics import YOLO
 ```
 
-## Loading The YOLO Model
+### 2. Load the YOLO Model
 
-Here, the YOLO segmentation model is loaded. We initialize it with a pre-trained weight file `yolov8n-seg.pt`. Replace "yolo11n-seg.pt" with your specific model path if necessary.
+Load the pre-trained YOLO segmentation model:
 
 ```python
-model = YOLO("yolo11n-seg.pt")
+model = YOLO("yolov11-seg.pt")
 ```
+Replace `yolov11-seg.pt` with the path to your specific YOLO model file.
 
-## Capturing The Video
+### 3. Capture Video Input
 
-### Webcam
+#### Option 1: Webcam
+
+To use the default webcam:
 
 ```python
 cap = cv.VideoCapture(0)
 ```
 
-This line opens the default webcam of your pc. **(0)** indicates the default webcam. If you want to capture video with any other webcam you may want to change the index (0) with (1) or (2) or so on.
+#### Option 2: Video File
 
-### Video file
+To use a video file:
 
 ```python
 path = 'your_video_path.mp4'
 cap = cv.VideoCapture(path)
 ```
 
-If you have a video file and want to perform image segmentation on it use the followings. This is optional since this project is focused on real-time segmentation from webcam.
-
-
-## Setting Video Properties
+### 4. Configure Video Properties
 
 ```python
 fourcc = cv.VideoWriter_fourcc(*'mp4v')
@@ -90,50 +92,64 @@ height = int(cap.get(cv.CAP_PROP_FRAME_HEIGHT))
 ```
 
 - **`fourcc`:** Specifies the codec for video writing.
-- **`fps_video`:** Retrieves **frames per second** of the video.
-- **`width` and `height`:** **Width** and **Height** of the video frame or the image.
+- **`fps_video`:** Frames per second of the video.
+- **`width` and `height`:** Frame dimensions.
 
-## Save The Output Video
+### 5. Save Output Video
 
-Set the pathe and file name that you want to save the processed video
+Set the output path and initialize the video writer:
 
 ```python
 output_path = '/path_to_output_video.mp4'
 out = cv.VideoWriter(output_path, fourcc, fps_video, (width, height))
 ```
 
-## Helper Function For FPS Calculation
+### 6. FPS Calculation Helper Function
 
 ```python
 def fps(start, end):
-    return int(1//(end-start))
+    return int(1 // (end - start))
 ```
 
-This function calculates FPS by measuring the time taken to process each frame.
+This function calculates the FPS based on the time taken to process each frame.
 
-## Main Loop
+### 7. Main Processing Loop
 
-### The main loop works step by step to open camera/video, run segmentation and saving the segmented video. The steps are briefely described below. For line by line explanation, see the notebook "**`YOLO_v11_segmentation.ipynb`**"
+The main loop performs the following steps:
 
-- First the program checks whether the camera is opened.
-- Reads the camera input by frames. If no camera is opened or no frames are read (ret is false), the loop ends.
-- Applies the YOLO segmentation model to the image or the frames
-- Measures the time spent doing the segmentation
-- Generates the segmentation mask
-- Puts the FPS as text on the output
-- Saves the output (as mp4 in our case)
-- Displays the frame with segmenttions in a window
-- Then the program exits the loop and stops the program when `q` key is pressed (`cv.waitKey(1)` => for 1ms)
-- Finally, video capture stops, finalized and output is saved as mp4 file and all OpenCV windows close.
+1. **Check Video Input:** First the program checks whether the camera is opened.
+2. **Read and Process Frames:** Reads the camera input by frames. If no camera is opened or no frames are read (ret is false), the loop ends.
+3. **Generate Segmentation Masks and Overlay FPS:** Applies the YOLO segmentation model to the image or the frames, measures the time spent doing the segmentation, generates the segmentation mask and puts the FPS as text on the output.
+4. **Save and Display Frames:** Saves the output (as mp4 in our case). Displays the frame with segmenttions in a window.
+5. **Exit on Keypress:** The program exits the loop and stops the program when `q` key is pressed (`cv.waitKey(1)` => for 1ms).
+6. **Cleanup:** Finally, video capture stops, finalized and output is saved as mp4 file and all OpenCV windows close.
 
+---
 
-## Running The Code
+## Running the Project
 
-- Save the code to the directory you want with a suitable name (e.g.YOLO_v11_seg.py)
-- Open the terminal and change directory to the folder you saved the code
-- If you want to run the code in a virtual environment then activate the virtual environment first.
-- Run the code:
+1. Save the script as `YOLO_v11_seg.py`.
+2. Open a terminal and navigate to the script's directory.
+3. (Optional) Activate your Python virtual environment.
+4. Run the script:
+
 ```bash
 python YOLO_v11_seg.py
 ```
-- Press `q` to save the output and exit the program.
+
+5. Press `q` to save the output and exit.
+
+---
+
+## Notes
+
+- Adjust the model path and video source based on your setup.
+- Ensure sufficient lighting for better segmentation, even in low-light conditions.
+
+---
+
+## References
+
+- [YOLO by Ultralytics](https://ultralytics.com/)
+- [OpenCV Documentation](https://docs.opencv.org/)
+
